@@ -39,8 +39,6 @@ $.when($.ready).then(() => {
     },
   ];
 
-
-
   //Declare a global object variable for planner
   // let plannerObj = new Object;
   const container = $(".container");
@@ -49,9 +47,7 @@ $.when($.ready).then(() => {
   let timeNow = moment().unix();
   let hourNow = moment.unix(timeNow).format("HH");
   let dateNow = moment.unix(timeNow).format("YYYYMMDD");
-  // console.log(dateNow)
-  // console.log(moment.unix(timeNow).format("MM/DD/YYYY"));
-  currentDay.textContent = `${moment.unix(timeNow).format("dddd, MMMM Do")}`;
+  currentDay.text(`${moment.unix(timeNow).format("dddd, MMMM Do")}`);
 
   let colorRender = (hour) => {
     if (hour > hourNow) {
@@ -63,35 +59,52 @@ $.when($.ready).then(() => {
     }
   };
 
-  let renderTime = () => {
+  let renderTimeBlock = () => {
+    container.html("");
+    let storedTodos = JSON.parse(localStorage.getItem("todos"));
     for (let i = 0; i < timeArr.length; i++) {
-      container.append($(`<div></div>`).addClass("time-block").attr("data-id", `${dateNow}${timeArr[i].hNum}`).append($(`<div></div>`).addClass("row").append($(`<div></div>`).addClass("hour").text(`${timeArr[i].hour}`)).append($(`<div></div>`).addClass(`description ${colorRender(timeArr[i].hNum)}`).append($(`<textarea name="" id="planner_${dateNow}${timeArr[i].hNum}" cols="115" rows="3"></textarea>`))).append($(`<button></button>`).addClass("saveBtn").attr("data-id", `${dateNow}${timeArr[i].hNum}`).append($(`<i></i>`).addClass("fas fa-save saveIcon").attr("data-id", `${dateNow}${timeArr[i].hNum}`)))))
+      let dataId = `${dateNow}${timeArr[i].hNum}`;
+      // console.log(dataId)
+      let textAreaContent = "";
+      if (storedTodos !== null) {
+        let todoObjText = storedTodos.find(element => element.dataId === dataId);
+        // console.log(todoObjText)
+        textAreaContent = todoObjText && todoObjText.todo ? todoObjText.todo : "";
+      }
+      container.append($(`<div></div>`).addClass("time-block").attr("data-id", `${dateNow}${timeArr[i].hNum}`).append($(`<div></div>`).addClass("row").append($(`<div></div>`).addClass("hour").text(`${timeArr[i].hour}`)).append($(`<div></div>`).addClass(`description ${colorRender(timeArr[i].hNum)}`).append($(`<textarea name="" id="planner_${dateNow}${timeArr[i].hNum}" cols="115" rows="3"></textarea>`).val(textAreaContent))).append($(`<button></button>`).addClass("saveBtn").attr("data-id", `${dateNow}${timeArr[i].hNum}`).append($(`<i></i>`).addClass("fas fa-save saveIcon").attr("data-id", `${dateNow}${timeArr[i].hNum}`)))))
     }
   };
 
-  let storeTodo = (todo, dateTime, timeStamp) => {
+  let storeTodo = (todo, dataId) => {
     let storedTodos = JSON.parse(localStorage.getItem("todos"));
     const todoObjInit = {
-      dateTime: dateTime,
+      dataId: dataId,
       todo: todo,
-      timeStamp: timeStamp,
     };
     if (storedTodos === null) {
       //Init the scores as array then push
       storedTodos = [];
       storedTodos.push(todoObjInit);
+      stateAlert("Success your plan was stored!", "success");
     } else {
-      //Push the obj in the array
-      storedTodos.push(todoObjInit);
+      let todoObj = storedTodos.find(element => element.dataId === dataId);
+      if (todoObj) {
+        storedTodos.find(element => element.dataId === dataId).todo = todo;
+        stateAlert("Success your plan was edited!", "success");
+      } else {
+        storedTodos.push(todoObjInit);
+        stateAlert("Success your plan was stored!", "success");
+      }
     }
-    localStorage.setItem("scores", JSON.stringify(storedTodos));
-    stateAlert("Todo had been stored!", "success");
+    localStorage.setItem("todos", JSON.stringify(storedTodos));
+    renderTimeBlock()
+
   };
 
   //Show Alert
   let stateAlert = (content, type) => {
     alertArea.html(`<div class="alert alert-${type}" id="alert-clip" role="alert">${content}</div>`)
-    setTimeout(() => { $("#alert-clip").hide(); }, 600);
+    setTimeout(() => { $("#alert-clip").hide(); }, 800);
   };
   //Show Alert
 
@@ -100,9 +113,10 @@ $.when($.ready).then(() => {
     // console.log(target.hasClass("saveBtn"));
     if (target.hasClass("saveBtn") || target.hasClass("saveIcon")) {
       let dataId = target.attr("data-id");
-      console.log(container.find(`#planner_${dataId}`).val())
+      let textTodo = container.find(`#planner_${dataId}`).val();
+      storeTodo(textTodo, dataId);
     }
   });
 
-  renderTime();
+  renderTimeBlock();
 });
