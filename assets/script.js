@@ -81,24 +81,27 @@ $.when($.ready).then(() => {
       dataId: dataId,
       todo: todo,
     };
-    if (storedTodos === null) {
-      //Init the scores as array then push
-      storedTodos = [];
-      storedTodos.push(todoObjInit);
-      stateAlert("Success your plan was stored!", "success");
-    } else {
-      let todoObj = storedTodos.find(element => element.dataId === dataId);
-      if (todoObj) {
-        storedTodos.find(element => element.dataId === dataId).todo = todo;
-        stateAlert("Success your plan was edited!", "success");
-      } else {
+    if (todo) {
+      if (storedTodos === null) {
+        //Init the scores as array then push
+        storedTodos = [];
         storedTodos.push(todoObjInit);
         stateAlert("Success your plan was stored!", "success");
+      } else {
+        let todoObj = storedTodos.find(element => element.dataId === dataId);
+        if (todoObj) {
+          storedTodos.find(element => element.dataId === dataId).todo = todo;
+          stateAlert("Success your plan was edited!", "success");
+        } else {
+          storedTodos.push(todoObjInit);
+          stateAlert("Success your plan was stored!", "success");
+        }
       }
+      localStorage.setItem("todos", JSON.stringify(storedTodos));
+      renderTimeBlock();
+    } else {
+      stateAlert("Please provide your plan", "danger");
     }
-    localStorage.setItem("todos", JSON.stringify(storedTodos));
-    renderTimeBlock()
-
   };
 
   //Show Alert
