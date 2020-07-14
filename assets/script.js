@@ -90,7 +90,7 @@ $.when($.ready).then(() => {
       } else {
         let todoObj = storedTodos.find(element => element.dataId === dataId);
         if (todoObj) {
-          storedTodos.find(element => element.dataId === dataId).todo = todo;
+          todoObj.todo = todo;
           stateAlert("Success your plan was edited!", "success");
         } else {
           storedTodos.push(todoObjInit);
